@@ -1,0 +1,12 @@
+{
+  "name": "Meow Voice",
+  "id": "org.resona.creative.meow-box.voice",
+  "version": "1.0.3",
+  "api": 1,
+  "description": "Pitch-tracked voice through formants that sweep M-E-O-W on every note, with size (kitten to lion) and purr.",
+  "sources": [
+    "src/dsp.cpp",
+    "src/ui.cpp",
+    "src/main.cpp"
+  ]
+}

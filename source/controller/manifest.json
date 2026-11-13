@@ -1,0 +1,26 @@
+{
+  "controllerVersion": "1.1.0",
+  "enabled": true,
+  "entries": {
+    "mobile": "mobile/index.html",
+    "web": "web/index.html"
+  },
+  "entry": "mobile/index.html",
+  "format": "clcontrol",
+  "id": "org.resona.creative.meow-box.controller",
+  "interfaces": [
+    "web",
+    "mobile"
+  ],
+  "name": "Meow Box",
+  "permissions": [
+    "midi"
+  ],
+  "target": {
+    "appId": "org.resona.creative.meow-box",
+    "appName": "Meow Box",
+    "appVersion": "1.1.0",
+    "protocolVersion": 1
+  },
+  "version": 1
+}

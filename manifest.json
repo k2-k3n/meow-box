@@ -1,0 +1,31 @@
+{
+  "folder": "01-Meow-Box",
+  "description": "拨弦触发随音高变化的猫叫，画面中的猫会跟着演奏回应。",
+  "app": {
+    "file": "App.rpk",
+    "id": "org.resona.creative.meow-box",
+    "name": "Meow Box",
+    "version": "1.1.8",
+    "kind": 1,
+    "bytes": 197588,
+    "sha256": "28a4b7c4e4480fe82fc868212bbfdd065eb93b22ff6eb747d94e4839b3de955f",
+    "crc32": 3130601732
+  },
+  "audio_packs": [
+    {
+      "file": "Audio-Pack.rpk",
+      "id": "org.resona.creative.meow-box.voice",
+      "name": "Meow Voice",
+      "version": "1.0.3",
+      "kind": 0,
+      "bytes": 17128,
+      "sha256": "e51695a312d20aa250bcbf75d1c5dd139a92213bd1ac2de5614c0444e978285a",
+      "crc32": 2954291668
+    }
+  ],
+  "source": "source/",
+  "cover": "source/images/cover.png",
+  "license_file_present": false,
+  "host_build_check": "updated build verified",
+  "community_upload": "not sent"
+}

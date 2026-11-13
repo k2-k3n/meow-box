@@ -1,0 +1,7 @@
+{
+  "description": "跟着单音拨弦的音高合成猫叫，可调体型、叫声长度和与吉他原声的混合比例。",
+  "readme": "# Meow Voice\n\n跟踪单音拨弦的音高，用共振峰合成喵声。可以把猫叫混回吉他原声，也可以单独开关呼噜声。\n\n## 使用方法\n\n1. 先在 Resona Box 上安装本音频包。\n2. 安装并打开 Meow Box 1.1.8。\n3. 在 App 界面使用上方和下方编码器控制音色与功能。\n\n## 配套关系\n\n- 音频包：`org.resona.creative.meow-box.voice`，版本 1.0.3\n- App：`org.resona.creative.meow-box`，版本 1.1.8\n\n完整界面及双编码器的旋转、短按、长按说明见 Meow Box 的社区项目页面。\n",
+  "release_notes": "缩短喵声收尾，并改善连续轻拨的触发。",
+  "source_url": "https://github.com/k2-k3n/meow-box/tree/main/source/dsp",
+  "category": ""
+}
