@@ -15,6 +15,7 @@
 #include <resona/startup_helpers.h>
 #include "kit.h"
 #include "clay_art.h"
+#include "growth_art.h"
 #include "meow_splash.h"
 #include "controller_link.h"
 
@@ -43,6 +44,8 @@ struct State {
     uint32_t ms, meow_at, idle, touched_at;
     uint8_t lastInput;
     float visualSize;
+    uint32_t firstDrawAt;
+    bool hasDrawn;
     int meowing, touched;   // touched: 1 SIZE, 2 MEOW mix (whose value to show for a moment)
     int roar, mew, hush;    // pads held on a controller
     ctl::Link link;
@@ -96,39 +99,73 @@ uint16_t cat_pixel(const ClayCat &cat, int sx, int sy, float mouth)
     return kit::mix(body, color, mouth * kit::clampf(edge * .25f, 0.0f, 1.0f));
 }
 
+// Keep the mouth and paws registered while two different silhouettes blend.
+int pose_row(int y, int height, int mouthY, const ClayCat &cat)
+{
+    if (y < mouthY) return y * cat.my / mouthY;
+    return cat.my + (y - mouthY) * (cat.h - cat.my) / (height - mouthY);
+}
+
 void draw_cat(kit::Canvas &c, float size, int floor, float mouth)
 {
-    // Original heights at 0, 50 and 100. The paws stay on the same floor line.
-    const float height = size < 50 ? 80.0f + size * .58f : 109.0f + (size - 50) * .34f;
-    const int h = (int)(height + .5f);
-    const int boundary = size < 50 ? 34 : 68;
-    const int lower = size < 50 ? 0 : 1;
-    const float t = kit::clampf((size - (boundary - 4)) / 8.0f, 0.0f, 1.0f);
+    const int lower = kit::clampi((int)(size / 25.0f), 0, 3);
+    const ClayCat &a = kGrowthCats[lower];
+    const ClayCat &b = kGrowthCats[lower + 1];
+    const float scale = (size - lower * 25.0f) / 25.0f;
+    const float t = kit::clampf((scale - .12f) / .76f, 0.0f, 1.0f);
     const float blend = t * t * (3.0f - 2.0f * t);
-    const ClayCat &a = kClayCats[lower];
-    const ClayCat &b = kClayCats[lower + 1];
-    const int wa = (h * a.w + a.h / 2) / a.h;
-    const int wb = (h * b.w + b.h / 2) / b.h;
-    const int width = blend <= 0 ? wa : blend >= 1 ? wb : wa > wb ? wa : wb;
-    const int xa = (c.W - wa) / 2, xb = (c.W - wb) / 2;
+    const int h = (int)(a.h + (b.h - a.h) * scale + .5f);
+    const int width = (int)(a.w + (b.w - a.w) * scale + .5f);
+    const int mouthY = (int)(a.my + (b.my - a.my) * scale + .5f);
     const int left = (c.W - width) / 2;
     int16_t sampleA[c.W], sampleB[c.W];
-    float reveal[c.W];
-    for (int x = left; x < left + width; ++x) {
-        sampleA[x] = x >= xa && x < xa + wa ? (x - xa) * a.w / wa : -1;
-        sampleB[x] = x >= xb && x < xb + wb ? (x - xb) * b.w / wb : -1;
-        // Reveal the next character across a narrow edge to avoid two superimposed faces.
-        reveal[x] = kit::clampf((blend * (width + 8) - (x - left)) / 8.0f, 0.0f, 1.0f);
+    for (int x = 0; x < width; ++x) {
+        sampleA[x] = x * a.w / width;
+        sampleB[x] = x * b.w / width;
     }
     for (int y = 0; y < h; ++y) {
-        const int ya = y * a.h / h, yb = y * b.h / h;
-        uint16_t *row = c.px + (floor - h + y) * c.stride;
-        for (int x = left; x < left + width; ++x) {
-            const uint16_t first = blend < 1 ? cat_pixel(a, sampleA[x], ya, mouth) : 0;
-            const uint16_t second = blend > 0 ? cat_pixel(b, sampleB[x], yb, mouth) : 0;
+        const int ya = pose_row(y, h, mouthY, a);
+        const int yb = pose_row(y, h, mouthY, b);
+        uint16_t *row = c.px + (floor - h + y) * c.stride + left;
+        for (int x = 0; x < width; ++x) {
+            if (blend <= 0.0f || blend >= 1.0f) {
+                const bool first = blend <= 0.0f;
+                const uint16_t color = first ? cat_pixel(a, sampleA[x], ya, mouth)
+                                             : cat_pixel(b, sampleB[x], yb, mouth);
+                if (color) row[x] = color;
+                continue;
+            }
+            const uint16_t first = cat_pixel(a, sampleA[x], ya, mouth);
+            const uint16_t second = cat_pixel(b, sampleB[x], yb, mouth);
             if (first || second)
-                row[x] = blend <= 0 ? first : blend >= 1 ? second :
-                         kit::mix(first ? first : row[x], second ? second : row[x], reveal[x]);
+                row[x] = kit::mix(first ? first : row[x], second ? second : row[x], blend);
+        }
+    }
+}
+
+constexpr uint32_t kBootFadeMs = 340;
+
+void blend_boot_frame(kit::Canvas &c, uint32_t elapsed)
+{
+    if (elapsed >= kBootFadeMs) return;
+    const float t = (float)elapsed / (float)kBootFadeMs;
+    const uint32_t mix = (uint32_t)(256.0f * t * t * (3.0f - 2.0f * t));
+    const uint32_t inverse = 256u - mix;
+    // The generator records the final frame's offset inside the embedded RSP1.
+    const uint8_t *runs = kMeowSplash + kMeowSplashFinalFrame;
+    const uint32_t count = resona_splash_word(runs + 4);
+    runs += 8;
+    int x = 0, y = 0;
+    for (uint32_t run = 0; run < count; ++run, runs += 4) {
+        const uint32_t pixels = (uint32_t)runs[0] | (uint32_t)runs[1] << 8;
+        const uint16_t color = (uint16_t)((uint32_t)runs[2] | (uint32_t)runs[3] << 8);
+        for (uint32_t i = 0; i < pixels; ++i) {
+            uint16_t &dst = c.px[y * c.stride + x];
+            const uint32_t red = (((color >> 11) * inverse + (dst >> 11) * mix) >> 8) << 11;
+            const uint32_t green = ((((color >> 5) & 63u) * inverse + ((dst >> 5) & 63u) * mix) >> 8) << 5;
+            const uint32_t blue = ((color & 31u) * inverse + (dst & 31u) * mix) >> 8;
+            dst = (uint16_t)(red | green | blue);
+            if (++x == c.W) { x = 0; ++y; }
         }
     }
 }
@@ -139,7 +176,7 @@ void draw(State *st)
     if (!c.begin(P)) return;
     const uint16_t ink = kit::rgb(34, 19, 37), cream = kit::rgb(255, 240, 214);
     const int length = length_now(st);
-    const int kind = st->visualSize < 34 ? 0 : (st->visualSize < 68 ? 1 : 2);
+    const int kind = st->visualSize < 25 ? 0 : (st->visualSize < 75 ? 1 : 2);
     const bool asleep = st->idle > 9000;
     float open = 0.0f, prog = 1.0f;
     if (st->meowing) {
@@ -174,6 +211,11 @@ void draw(State *st)
         c.text_s(9, 140, 1, cream, ink, value);
     }
     c.banner(kit::audio_message(st->audio, "INSTALL MEOW VOICE IN LAB"), ink, kit::rgb(252, 236, 150));
+    if (!st->hasDrawn) {
+        st->hasDrawn = true;
+        st->firstDrawAt = st->ms;
+    }
+    blend_boot_frame(c, st->ms - st->firstDrawAt);
     c.present(P);
 }
 
@@ -195,7 +237,7 @@ int init(void *state, const resona_platform *platform)
     s.size = kit::clampi(s.size, 0, 100); s.mix = kit::clampi(s.mix, 0, 100); s.length = kit::clampi(s.length, 0, 2);
     s.purr = s.purr ? 1 : 0; s.bend = kit::clampi(s.bend, 0, 100); s.purr_amt = kit::clampi(s.purr_amt, 0, 100);
     s.level = kit::clampi(s.level, -12, 6);
-    st->visualSize = (float)size_now(st);
+    st->visualSize = 0.0f;
     bind(st);
     push(st);
     return 0;
@@ -260,9 +302,11 @@ void frame(void *state, uint32_t ms)
         st->meowing = 1;
         st->meow_at = st->ms;
     }
-    const float difference = (float)size_now(st) - st->visualSize;
-    if (difference > -.15f && difference < .15f) st->visualSize = (float)size_now(st);
-    else st->visualSize += difference * (1.0f - resona_expf(-(float)ms / 36.0f));
+    if (st->hasDrawn && st->ms - st->firstDrawAt >= kBootFadeMs) {
+        const float difference = (float)size_now(st) - st->visualSize;
+        if (difference > -.15f && difference < .15f) st->visualSize = (float)size_now(st);
+        else st->visualSize += difference * (1.0f - resona_expf(-(float)ms / 48.0f));
+    }
     draw(st);
 }
 

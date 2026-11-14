@@ -1,14 +1,12 @@
-# Meow Box 1.1.8
+# Meow Box 1.1.10
 
-拨弦触发随音高变化的猫叫，画面中的猫会跟着演奏回应。
+拨一根弦，屏幕上的猫就跟着音高喵一声。转动上方旋钮，小猫会慢慢长成狮子，声音也跟着变低。
 
-![Meow Box 界面](界面.png)
+![Meow Box 界面](source/images/cover.png)
 
-先安装下表的配套算法包，再安装 App。
+先安装配套音频包，再安装 App。
 
-| 文件 | 版本 |
-| --- | --- |
-| [App.rpk](App.rpk) | Meow Box 1.1.8 |
-| [Audio-Pack.rpk](Audio-Pack.rpk) | Meow Voice 1.0.3 |
-
-[套件说明](套件说明.md) · [App 源码](source/) · [配套算法源码](source/dsp/) · [版本和校验值](manifest.json) · [社区发布文案](社区发布文案.md)
+- [App 源码与使用说明](source/)
+- [配套音频包源码](source/dsp/)
+- [社区发布文案](社区发布文案.md)
+- [安装包清单与哈希](manifest.json)

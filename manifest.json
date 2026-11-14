@@ -5,11 +5,11 @@
     "file": "App.rpk",
     "id": "org.resona.creative.meow-box",
     "name": "Meow Box",
-    "version": "1.1.8",
+    "version": "1.1.10",
     "kind": 1,
-    "bytes": 197588,
-    "sha256": "28a4b7c4e4480fe82fc868212bbfdd065eb93b22ff6eb747d94e4839b3de955f",
-    "crc32": 3130601732
+    "bytes": 226068,
+    "sha256": "f3eed0954362ca803a7a59e621cf4240d23beaef2100e3e017a8f056978c166c",
+    "crc32": 686536898
   },
   "audio_packs": [
     {

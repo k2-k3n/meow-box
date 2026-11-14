@@ -2,7 +2,7 @@
 
 ![Meow Box](images/cover.png)
 
-拨一下弦，屏幕上的猫就跟着叫。转上方旋钮，声音会从小猫变成狮子。
+拨一根弦，屏幕上的猫就跟着音高喵一声。转动上方旋钮，小猫会慢慢长成狮子，声音也跟着变低。
 
 ## 配套音频包
 
@@ -14,7 +14,7 @@
 
 | 页面／模式 | 上方旋转 | 上方短按 | 上方长按 | 下方旋转 | 下方短按 | 下方长按／按住 |
 | --- | --- | --- | --- | --- | --- | --- |
-| Meow Box | 小猫→猫→狮子的音色 | 切换短／中／长喵叫 | 无功能 | 调吉他与喵声的混合比例 | 呼噜声开／关 | 长按重置 |
+| Meow Box | 调 SIZE 0–100，体型和音色从小猫变到狮子 | 切换短、中、长三种喵叫 | 无功能 | 调吉他与喵声的混合比例 | 呼噜声开／关 | 长按重置 |
 
 ## 项目详细说明
 
@@ -52,10 +52,10 @@ The controllers add three hold pads and an XY surface (SIZE across, MEOW mix up)
 
 ## The scene
 
-- **The cat** is a grey kitten below SIZE 34, a ginger cat up to 67 and a maned lion above. It breathes, hops and animates between a closed and an open mouth during a meow. The cat scales continuously from 80 to 126 pixels as SIZE goes from 0 to 100, with its paws aligned to the same floor line. The art transitions near SIZE 34 and 68.
-- **A hard pick** (or any knob touch) opens its mouth for one meow, with a speech bubble. The lion says ROAR.
+- **SIZE** blends five poses from a grey kitten to a golden lion. The cat grows from 80 to 126 pixels high with its paws on the same floor line.
+- **A hard pick** (or any knob touch) opens the cat’s mouth. The screen shows ROAR for the lion.
 - **MIX** shows the proportion of the synthesized voice.
-- **Hearts** drift up while purr is on.
+- **PURR** appears while purr is on and the cat is awake and idle.
 - After about 9 s of silence the cat falls asleep.
 
 The App cannot read the pack's state, so the cat acts on the input level meter, not on the exact moment the pack starts a meow.
@@ -74,11 +74,11 @@ The App cannot read the pack's state, so the cat acts on the input level meter, 
 | PURR | 0 to 100 % | CUSTOMIZE click: on (45, or the controller's amount) or 0 |
 | LEVEL | -12 to 6 dB | 0, or the controller |
 
-Play single notes: the pitch tracker follows one note at a time. Later, softer picks can start a fresh meow while the previous note is still ringing. Each meow ends with a short voiced release. Measured on a guitar DI, the output is within about 1.5 dB of the dry guitar at every SIZE.
+Play single notes: the pitch tracker follows one note at a time. Each meow ends with a short voiced release. Measured on a guitar DI, the output is within about 1.5 dB of the dry guitar at every SIZE.
 
 ## 开机动画
 
-暖灯从暗处亮起，小猫跳上红地毯后露出标题。App 会在首次启动时写入独立的开机动画，下一次正常开机时播放。
+从小猫到狮子，现在有五种体型渐变。开机时，小猫先在地毯上坐稳，画面淡入主界面后，再长到上次保存的体型。 App 首次运行时保存开机动画，下次开机播放。
 
 ## Build
 
@@ -86,4 +86,5 @@ Play single notes: the pitch tracker follows one note at a time. Later, softer p
     resona-lab pack build dsp
     resona-lab app build .          # the App
     swift tools/encode_clay.swift assets/clay-room-v2.png assets/clay-cats-v2.png assets/clay-cats-meow.png src/clay_art.h
+    python3 tools/encode_growth.py   # Pillow
     python3 tools/make_splash.py

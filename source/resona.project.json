@@ -1,7 +1,7 @@
 {
   "name": "Meow Box",
   "id": "org.resona.creative.meow-box",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "api": 1,
   "description": "A cat sings whatever you play: every pick is a meow at your note, from kitten to lion, in a pixel-art room.",
   "kind": "app",
